@@ -3,7 +3,8 @@ package layout
 import (
 	"bytes"
 	"encoding/json"
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
+
 	"log"
 	"os"
 	"strings"
