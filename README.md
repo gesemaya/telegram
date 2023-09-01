@@ -1,5 +1,6 @@
 # Telebot
->"I never knew creating Telegram bots could be so _sexy_!"
+
+> "I never knew creating Telegram bots could be so _sexy_!"
 
 [![GoDoc](https://godoc.org/github.com/gesemaya/telegram?status.svg)](https://godoc.org/github.com/gesemaya/telegram)
 [![GitHub Actions](https://github.com/tucnak/telebot/actions/workflows/go.yml/badge.svg)](https://github.com/tucnak/telebot/actions)
@@ -12,20 +13,21 @@ go get -u github.com/gesemaya/telegram
 
 * [Overview](#overview)
 * [Getting Started](#getting-started)
-	- [Context](#context)
-	- [Middleware](#middleware)
-	- [Poller](#poller)
-	- [Commands](#commands)
-	- [Files](#files)
-	- [Sendable](#sendable)
-	- [Editable](#editable)
-	- [Keyboards](#keyboards)
-	- [Inline mode](#inline-mode)
+    - [Context](#context)
+    - [Middleware](#middleware)
+    - [Poller](#poller)
+    - [Commands](#commands)
+    - [Files](#files)
+    - [Sendable](#sendable)
+    - [Editable](#editable)
+    - [Keyboards](#keyboards)
+    - [Inline mode](#inline-mode)
 * [Contributing](#contributing)
 * [Donate](#donate)
 * [License](#license)
 
 # Overview
+
 Telebot is a bot framework for [Telegram Bot API](https://core.telegram.org/bots/api).
 This package provides the best of its kind API for command routing, inline query requests and keyboards, as well
 as callbacks. Actually, I went a couple steps further, so instead of making a 1:1 API wrapper I chose to focus on
@@ -42,6 +44,7 @@ highload-ready solution. I'll test and benchmark the most popular actions and if
 against them without sacrificing API quality.
 
 # Getting Started
+
 Let's take a look at the minimal Telebot setup:
 
 ```go
@@ -88,6 +91,7 @@ is completely extensible, so I can introduce them without breaking
 backwards compatibility.
 
 ## Context
+
 Context is a special type that wraps a huge update structure and represents
 the context of the current event. It provides several helpers, which allow
 getting, for example, the chat that this update had been sent in, no matter
@@ -131,10 +135,13 @@ b.Handle(tele.OnQuery, func(c tele.Context) error {
 ```
 
 ## Middleware
-Telebot has a simple and recognizable way to set up middleware — chained functions with access to `Context`, called before the handler execution.
+
+Telebot has a simple and recognizable way to set up middleware — chained functions with access to `Context`, called
+before the handler execution.
 
 Import a `middleware` package to get some basic out-of-box middleware
 implementations:
+
 ```go
 import "github.com/gesemaya/telegram/middleware"
 ```
@@ -155,6 +162,7 @@ b.Handle(tele.OnText, onText, middleware.IgnoreVia())
 ```
 
 Custom middleware example:
+
 ```go
 // AutoResponder automatically responds to every callback update.
 func AutoResponder(next tele.HandlerFunc) tele.HandlerFunc {
@@ -168,6 +176,7 @@ func AutoResponder(next tele.HandlerFunc) tele.HandlerFunc {
 ```
 
 ## Poller
+
 Telebot doesn't really care how you provide it with incoming updates, as long
 as you set it up with a Poller, or call ProcessUpdate for each update:
 
@@ -189,11 +198,13 @@ type Poller interface {
 ```
 
 ## Commands
+
 When handling commands, Telebot supports both direct (`/command`) and group-like
 syntax (`/command@botname`) and will never deliver messages addressed to some
 other bot, even if [privacy mode](https://core.telegram.org/bots#privacy-mode) is off.
 
 For simplified deep-linking, Telebot also extracts payload:
+
 ```go
 // Command: /start <PAYLOAD>
 b.Handle("/start", func(c tele.Context) error {
@@ -202,6 +213,7 @@ b.Handle("/start", func(c tele.Context) error {
 ```
 
 For multiple arguments use:
+
 ```go
 // Command: /tags <tag1> <tag2> <...>
 b.Handle("/tags", func(c tele.Context) error {
@@ -213,11 +225,13 @@ b.Handle("/tags", func(c tele.Context) error {
 ```
 
 ## Files
->Telegram allows files up to 50 MB in size.
+
+> Telegram allows files up to 50 MB in size.
 
 Telebot allows to both upload (from disk or by URL) and download (from Telegram)
 files in bot's scope. Also, sending any kind of media with a File created
 from disk will upload the file to Telegram automatically:
+
 ```go
 a := &tele.Audio{File: tele.FromDisk("file.ogg")}
 
@@ -241,6 +255,7 @@ to marshal them into whatever format, `File` only contain public fields, so no
 data will ever be lost.
 
 ## Sendable
+
 Send is undoubtedly the most important method in Telebot. `Send()` accepts a
 `Recipient` (could be user, group or a channel) and a `Sendable`. Other types other than
 the Telebot-provided media types (`Photo`, `Audio`, `Video`, etc.) are `Sendable`.
@@ -262,6 +277,7 @@ The only type at the time that doesn't fit `Send()` is `Album` and there is a re
 for that. Albums were added not so long ago, so they are slightly quirky for backwards
 compatibilities sake. In fact, an `Album` can be sent, but never received. Instead,
 Telegram returns a `[]Message`, one for each media object in the album:
+
 ```go
 p := &tele.Photo{File: tele.FromDisk("chicken.jpg")}
 v := &tele.Video{File: tele.FromURL("http://video.mp4")}
@@ -270,11 +286,13 @@ msgs, err := b.SendAlbum(user, tele.Album{p, v})
 ```
 
 ### Send options
+
 Send options are objects and flags you can pass to `Send()`, `Edit()` and friends
 as optional arguments (following the recipient and the text/media). The most
 important one is called `SendOptions`, it lets you control _all_ the properties of
 the message supported by Telegram. The only drawback is that it's rather
 inconvenient to use at times, so `Send()` supports multiple shorthands:
+
 ```go
 // regular send options
 b.Send(user, "text", &tele.SendOptions{
@@ -295,12 +313,14 @@ Full list of supported option-flags you can find
 [here](https://pkg.go.dev/github.com/gesemaya/telegram#Option).
 
 ## Editable
+
 If you want to edit some existing message, you don't really need to store the
 original `*Message` object. In fact, upon edit, Telegram only requires `chat_id`
 and `message_id`. So you don't really need the Message as a whole. Also, you
 might want to store references to certain messages in the database, so I thought
 it made sense for *any* Go struct to be editable as a Telegram message, to implement
 `Editable`:
+
 ```go
 // Editable is an interface for all objects that
 // provide "message signature", a pair of 32-bit
@@ -321,6 +341,7 @@ type Editable interface {
 
 For example, `Message` type is Editable. Here is the implementation of `StoredMessage`
 type, provided by Telebot:
+
 ```go
 // StoredMessage is an example struct suitable for being
 // stored in the database as-is or being embedded into
@@ -337,6 +358,7 @@ func (x StoredMessage) MessageSig() (int, int64) {
 ```
 
 Why bother at all? Well, it allows you to do things like this:
+
 ```go
 // just two integer columns in the database
 var msgs []tele.StoredMessage
@@ -353,6 +375,7 @@ I find it incredibly neat. Worth noting, at this point of time there exists
 another method in the Edit family, `EditCaption()` which is of a pretty
 rare use, so I didn't bother including it to `Edit()`, just like I did with
 `SendAlbum()` as it would inevitably lead to unnecessary complications.
+
 ```go
 var m *Message
 
@@ -361,6 +384,7 @@ bot.EditCaption(m, "new caption")
 ```
 
 ## Keyboards
+
 Telebot supports both kinds of keyboards Telegram provides: reply and inline
 keyboards. Any button can also act as endpoints for `Handle()`.
 
@@ -410,6 +434,7 @@ b.Handle(&btnPrev, func(c tele.Context) error {
 ```
 
 You can use markup constructor for every type of possible button:
+
 ```go
 r := b.NewMarkup()
 
@@ -429,6 +454,7 @@ r.Login("Login", &tele.Login{...})
 ```
 
 ## Inline mode
+
 So if you want to handle incoming inline queries you better plug the `tele.OnQuery`
 endpoint and then use the `Answer()` method to send a list of inline queries
 back. I think at the time of writing, Telebot supports all of the provided result
